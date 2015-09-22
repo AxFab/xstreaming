@@ -1,34 +1,59 @@
-#include "xstm/xstream.hpp"
-#include "xstm/nschemareader.hpp"
+/*
+  This file is part of the XStreaming library
+  Copyright (c) 2015 Fabien Bavent
+
+  Permission is hereby granted, free of charge, to any person obtaining a
+  copy of this software and associated documentation files (the "Software"),
+  to deal in the Software without restriction, including without limitation
+  the rights to use, copy, modify, merge, publish, distribute, sublicense,
+  and/or sell copies of the Software, and to permit persons to whom the
+  Software is furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+  DEALINGS IN THE SOFTWARE.
+*/
 #include <iostream>
 #include <fstream>
+#include "xstm/xstream.hpp"
+#include "xstm/nschemareader.hpp"
 
-using namespace axkit;
-using namespace std;
+namespace xstm {
 
 
-int main() 
+
+int main()
 {
   const char* file = "./datakit/schemas/xtk_schema.xml";
   XReader* read = new XReader(new ifstream(file, ifstream::in));
 
-  if (1) {    
+  if (1) {
     XObject* obj;
     do  {
-      obj = read->read(); 
+      obj = read->read();
     } while (obj);
 
     XDocument* doc = read->document();
 
     read->dispose();
     delete read;
-    return 0; // Should be passed by valgrind!
+    return 0;
 
   } else {
-    NSchemaReader sch (read);
+    NSchemaReader sch(read);
     NSchema *schema = sch.read();
     NString sql = schema->getSqlCreate();
   }
 
   return 0;
 }
+
+}  // namespace xstm
+

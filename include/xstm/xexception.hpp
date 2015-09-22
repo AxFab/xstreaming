@@ -20,28 +20,47 @@
   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
   DEALINGS IN THE SOFTWARE.
 */
-#include "xstm/xtext.hpp"
+#ifndef _XSTM_XEXCEPTION_HPP
+#define _XSTM_XEXCEPTION_HPP 1
+#include <exception>
+#include "nkit/string.hpp"
 
 namespace xstm {
 
-// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-//      XText
-// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-
-/// Initializes a new instance of XText class.
-XText::XText(cstr string)
-  : XNode(XNODE_TEXT)
+class XException : public std::exception
 {
-  value_ = XObject::FormatText(string);
-}
+public:
+  explicit XException(cstr msg) { msg_ = NString(msg); }
+  virtual ~XException() throw() {}
+  virtual const char* what() throw() { return msg_.c_str(); }
+private:
+  NString msg_;
+};
 
 
-/// Returns the indented XML for this object.
-cstr XText::toString() const
+class XNullParamException : public XException
 {
-  return value();
-}
+public:
+  XNullParamException()
+    : XException("A non-null parameter was unset.") {}
+  explicit XNullParamException(cstr param)
+    : XException(NString::Concat("The parameter '", param,
+      "' can't be null.", NULL).c_str()) {}
+};
+
+
+class XNotImplementedException : public XException
+{
+public:
+  XNotImplementedException()
+    : XException("The function invoked is not implemented.") {}
+  explicit XNotImplementedException(cstr func)
+    : XException(NString::Concat("The function '", func,
+      "' is not implemented.", NULL).c_str()) {}
+};
 
 
 }  // namespace xstm
+
+#endif /* _XSTM_XEXCEPTION_HPP */

@@ -20,28 +20,57 @@
   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
   DEALINGS IN THE SOFTWARE.
 */
-#include "xstm/xtext.hpp"
+#ifndef _XSTM_XELEMENT_HPP
+#define _XSTM_XELEMENT_HPP 1
+#include "xcontainer.hpp"
 
 namespace xstm {
 
-// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-//      XText
-// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+class XAttributeMap;
 
-
-/// Initializes a new instance of XText class.
-XText::XText(cstr string)
-  : XNode(XNODE_TEXT)
+class XName
 {
-  value_ = XObject::FormatText(string);
-}
+private:
+  NString name_;
+  NString prefix_;
+  NString namespace_;
+public:
+  operator NString()
+  {
+    NString str = NString::Empty;
+    str += NString(namespace_) + NString(name_);
+    return str;
+  }
+};
 
 
-/// Returns the indented XML for this object.
-cstr XText::toString() const
+/// This abstract object define the base of all items related
+/// to XML node tree.
+class XElement : public XContainer
 {
-  return value();
-}
+public:  // Constructors & Public Methods
+  ///
+  explicit XElement(cstr name, XAttributeMap *map = NULL);
+  virtual ~XElement();
+  /// Returns the indented XML for this object.
+  virtual cstr toString() const;
 
+  ///
+  NString attributeString(cstr name) const;
+  ///
+  bool attributeBool(cstr name, bool *value) const;
+
+public:  // Public Accessors
+  NString name() { return name_; }
+
+public:
+  static XElement* Load(cstr url);
+
+protected:  // Protected Data-Members
+  NString name_;
+  XAttributeMap *attributes_;
+};
 
 }  // namespace xstm
+
+#endif /* _XSTM_XELEMENT_HPP */

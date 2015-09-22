@@ -1,7 +1,28 @@
-#include "xstm/xnode.hpp"
-#include "xstm/xstream.hpp"
+/*
+  This file is part of the XStreaming library
+  Copyright (c) 2015 Fabien Bavent
 
-using namespace axkit;
+  Permission is hereby granted, free of charge, to any person obtaining a
+  copy of this software and associated documentation files (the "Software"),
+  to deal in the Software without restriction, including without limitation
+  the rights to use, copy, modify, merge, publish, distribute, sublicense,
+  and/or sell copies of the Software, and to permit persons to whom the
+  Software is furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+  DEALINGS IN THE SOFTWARE.
+*/
+#include "xstm/xattribute.hpp"
+
+namespace xstm {
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 //      XAttribute
@@ -18,7 +39,7 @@ XAttribute::XAttribute(const XAttribute& attribut)
 }
 
 
-/// Initializes a new instance of the XAttribute class from the 
+/// Initializes a new instance of the XAttribute class from the
 /// specified name and value.
 XAttribute::XAttribute(cstr name, cstr value)
   : XObject(XNODE_ATTRIBUTE)
@@ -35,7 +56,7 @@ XAttribute* XAttribute::remove()
 {
   if (this->next_)
     this->next_->previous_ = this->previous_;
-  
+
   if (this->previous_)
     this->previous_->next_ = this->next_;
 
@@ -53,13 +74,6 @@ cstr XAttribute::toString() const
   str += value_;
   str += "\"";
   return str;
-}
-
-
-/// Writes this node to a stream.
-void XAttribute::writeTo(const XWriter& stream) const
-{
-  stream.write(this->toString());
 }
 
 
@@ -112,3 +126,7 @@ XAttributeMap* XAttributeMap::Parse(cstr string)
     (*map)[attr->name()] = attr;
   }
 }
+
+
+}  // namespace xstm
+

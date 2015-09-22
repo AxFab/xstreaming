@@ -20,28 +20,25 @@
   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
   DEALINGS IN THE SOFTWARE.
 */
-#include "xstm/xtext.hpp"
+#ifndef _XSTM_XDOCUMENT_HPP
+#define _XSTM_XDOCUMENT_HPP 1
+#include "xcontainer.hpp"
 
 namespace xstm {
 
-// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-//      XText
-// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-
-/// Initializes a new instance of XText class.
-XText::XText(cstr string)
-  : XNode(XNODE_TEXT)
+class XDocument : public XContainer
 {
-  value_ = XObject::FormatText(string);
-}
+private:
+public:
+  XDocument();
+  /// Returns the indented XML for this object.
+  virtual cstr toString() const;
 
-
-/// Returns the indented XML for this object.
-cstr XText::toString() const
-{
-  return value();
-}
+  static XDocument* Load(cstr url);
+};
 
 
 }  // namespace xstm
+
+#endif /* _XSTM_XDOCUMENT_HPP */

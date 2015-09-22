@@ -1,11 +1,33 @@
-#include "xstm/xstream.hpp"
+/*
+  This file is part of the XStreaming library
+  Copyright (c) 2015 Fabien Bavent
+
+  Permission is hereby granted, free of charge, to any person obtaining a
+  copy of this software and associated documentation files (the "Software"),
+  to deal in the Software without restriction, including without limitation
+  the rights to use, copy, modify, merge, publish, distribute, sublicense,
+  and/or sell copies of the Software, and to permit persons to whom the
+  Software is furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+  DEALINGS IN THE SOFTWARE.
+*/
 #include <iostream>
 #include <cstring>
+#include "xstm/xstream.hpp"
+#include "xstm/xexception.hpp"
 
-using namespace axkit;
-using namespace std;
+namespace xstm {
 
-XStream::XStream(istream* stream)
+XStream::XStream(std::istream* stream)
   : encoding_(XStream::detectEncoding(stream))
 {
   stream_ = stream;
@@ -37,7 +59,7 @@ bool isUTF8Char(unsigned char *str, int lg)
   else if (k < 2 || k > 6)
     return false;
 
-  k = max(k, lg);
+  k = std::max(k, lg);
   for (int i = 1; i < k; ++i) {
     if ((str[i] & 0xC0) != 0x80)
       return false;
@@ -46,12 +68,12 @@ bool isUTF8Char(unsigned char *str, int lg)
   return true;
 }
 
-const NEncoding& XStream::detectEncoding(istream* stream)
+const NEncoding& XStream::detectEncoding(std::istream* stream)
 {
   unsigned char buf[16];
   stream->seekg(0);
   stream->read(reinterpret_cast<char*>(buf), 16);
-  if (buf[0] == 0xef && buf[1] == 0xbb && buf[2] == 0xbf) {// UTF8 BOM
+  if (buf[0] == 0xef && buf[1] == 0xbb && buf[2] == 0xbf) {  // UTF8 BOM
     stream->seekg(3);
     return NEncoding::UTF8();
   } else if (buf[0] == 0xFE && buf[1] == 0xFF) {
@@ -63,7 +85,7 @@ const NEncoding& XStream::detectEncoding(istream* stream)
   } else {
     // ASCII, UTF-8 or Latin1
     stream->seekg(0);
-    for (int i=0; i<16; ++i) {
+    for (int i=0; i < 16; ++i) {
       if (buf[i] > 0x80) {
         if (isUTF8Char(&buf[i], 16))
           return NEncoding::UTF8();
@@ -72,9 +94,10 @@ const NEncoding& XStream::detectEncoding(istream* stream)
       }
     }
 
-    return NEncoding::UTF8(); // Default to UTF8 !?
+    return NEncoding::UTF8();  // Default to UTF8 !?
   }
 }
+
 
 int XStream::indexOf(const char *str)
 {
@@ -85,10 +108,6 @@ int XStream::indexOf(const char *str)
   return p - s;
 }
 
-//int XStream::indexOf(int c)
-//{
-//}
-
 
 void XStream::inval()
 {
@@ -97,12 +116,12 @@ void XStream::inval()
     memmove(buffer_, &buffer_[position_], avail);
   position_ = 0;
   size_ = avail;
-  int read = encoding_.readStream(stream_, &buffer_[size_], capacity_ - size_);
+  int read = encoding_.readStream(stream_, &buffer_[size_],
+    capacity_ - size_);
   size_ += read;
   if (read == 0) {
     read++;
   }
-
 }
 
 bool XStream::peek(char* str, int lg)
@@ -119,8 +138,9 @@ bool XStream::peek(char* str, int lg)
 void XStream::read(int sz)
 {
   position_ += sz;
-  if (available() < 20)
+  if (available() < 20) {
     inval();
+  }
 }
 
 char* XStream::string() const
@@ -151,24 +171,5 @@ void XWriter::newline() const
   throw new XNotImplementedException();
 }
 
-
-cstr XObject::FormatAttName(cstr value)
-{
-  return value;
-}
-
-cstr XObject::FormatAttText(cstr value)
-{
-  return value;
-}
-
-cstr XObject::FormatName(cstr value)
-{
-  return value;
-}
-
-cstr XObject::FormatText(cstr value)
-{
-  return value;
-}
+}  // namespace xstm
 

@@ -20,7 +20,7 @@ VERSION := $(MAJOR_VERSION).$(MINOR_VERSION).$(SUBLEVEL_VERS)
 
 
 S = @
-# V = @
+V = @
 Q = @ echo
 
 
@@ -38,7 +38,7 @@ ASM = nasm -f elf32
 
 INSTALL = install
 
-CFLAGS = -Wall -Wextra -pedantic -I include -I src -ggdb3
+CFLAGS = -Wall -Wextra -pedantic -I include -I src -ggdb3 -Dnkit=xstm -Wno-unused-parameter
 CXFLAGS = $(CFLAGS)
 LDFLAGS = 
 
@@ -92,6 +92,7 @@ config:
 check:
 # TODO -- Launch unit tests
 
+.PHONY: all runtime libs utils install unistall clean distclean config check
 
 # I N S T A L L A T I O N -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
@@ -177,6 +178,8 @@ $(bindir)/$1: $(call objs, $(filter-out $(omit_$1-y),$(wild_$1)))
 endef
 
 define SHARED
+$1: spInclude = $2
+$1: spDefine = $3
 $1:$(libdir)/$1.so
 $(libdir)/$1.so: $(call objs, $(filter-out $(omit_$1-y),$(wild_$1)))
 	$(Q) "  LD    $$@"

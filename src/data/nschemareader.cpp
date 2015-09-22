@@ -1,7 +1,29 @@
+/*
+  This file is part of the XStreaming library
+  Copyright (c) 2015 Fabien Bavent
+
+  Permission is hereby granted, free of charge, to any person obtaining a
+  copy of this software and associated documentation files (the "Software"),
+  to deal in the Software without restriction, including without limitation
+  the rights to use, copy, modify, merge, publish, distribute, sublicense,
+  and/or sell copies of the Software, and to permit persons to whom the
+  Software is furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+  DEALINGS IN THE SOFTWARE.
+*/
 #include "xstm/nschemareader.hpp"
 #include <cstring>
 
-using namespace axkit;
+namespace xstm {
 
 NSchemaReader::NSchemaReader(XReader *reader)
 {
@@ -37,7 +59,7 @@ int NSchemaReader::readCommonProperties(XElement* ndEntity, NDescr* item)
   NString str;
   if (reader_->readTheString(ndEntity, str))
     return -1;
-  
+
   if (name == "label")
     item->setLabel(str);
   else if (name == "labelSingular")
@@ -71,22 +93,22 @@ int NSchemaReader::readKey(XElement* ndKey, NEntity *entity)
       node->parent()->removeNodes();
       return 0;
     }
-    
+
     if (node->nodeType() == XNODE_TEXT)
       return -1;
     if (node->nodeType() != XNODE_ELEMENT)
       continue;
-    
+
     XElement* ndElm = reinterpret_cast<XElement*>(node);
     if (ndElm->name() == "keyField") {
-      // TODO Get value and other attributes!
+      // TODO(axfab) Get value and other attributes!
       NString str;
       if (reader_->readTheString(ndElm, str))
         return -1;
       datakey->addField(str);
-      
-    } else
+    } else {
       readCommonProperties(ndElm, datakey);
+    }
   }
 }
 
@@ -106,7 +128,8 @@ int NSchemaReader::readSysFilter(XElement* ndFilter, NEntity *entity)
 int NSchemaReader::readProperty(XElement* ndProp, NEntity *entity)
 {
   XNode *current = static_cast<XNode*>(ndProp);
-  NProperty *prop = new NProperty(ndProp->attributeString("name"), ndProp->attributeString("type"));
+  NProperty *prop = new NProperty(ndProp->attributeString("name"),
+    ndProp->attributeString("type"));
   prop->setMapping(ndProp->attributeString("mapping"));
   prop->setLength(ndProp->attributeString("length"));
   prop->setDefaultValue(ndProp->attributeString("default"));
@@ -126,21 +149,21 @@ int NSchemaReader::readProperty(XElement* ndProp, NEntity *entity)
       node->parent()->removeNodes();
       return 0;
     }
-    
+
     if (node->nodeType() == XNODE_TEXT)
       return -1;
     if (node->nodeType() != XNODE_ELEMENT)
       continue;
-    
+
     XElement* ndElm = reinterpret_cast<XElement*>(node);
     if (ndElm->name() == "expression") {
       NString str;
       if (reader_->readTheString(ndElm, str))
         return -1;
       prop->setExpression(str);
-    
-    } else
+    } else {
       readCommonProperties(ndElm, prop);
+    }
   }
 }
 
@@ -156,41 +179,41 @@ int NSchemaReader::readEntity(XElement* ndEntity)
       node->parent()->removeNodes();
       return 0;
     }
-    
+
     if (node->nodeType() == XNODE_TEXT)
       return -1;
     if (node->nodeType() != XNODE_ELEMENT)
       continue;
-    
+
     XElement* ndElm = reinterpret_cast<XElement*>(node);
     if (ndElm->name() == "format") {
       NString str;
       if (reader_->readTheString(ndElm, str))
         return -1;
       entity->setFormat(str);
-    
+
     } else if (ndElm->name() == "extend") {
       NString str;
       if (reader_->readTheString(ndElm, str))
         return -1;
       extendEntity(entity, str);
-      
+
     } else if (ndElm->name() == "key") {
       if (readKey(ndElm, entity))
         return -1;
-      
+
     } else if (ndElm->name() == "sysFilter") {
       if (readSysFilter(ndElm, entity))
         return -1;
-      
+
     } else if (ndElm->name() == "property") {
       if (readProperty(ndElm, entity))
         return -1;
 
-    } else
+    } else {
       readCommonProperties(ndElm, entity);
+    }
   }
-
 }
 
 int NSchemaReader::readEnum(XElement* ndEnum)
@@ -203,22 +226,23 @@ int NSchemaReader::readEnum(XElement* ndEnum)
       node->parent()->removeNodes();
       return 0;
     }
-    
+
     if (node->nodeType() == XNODE_TEXT)
       return -1;
     if (node->nodeType() != XNODE_ELEMENT)
       continue;
-    
+
     XElement* ndElm = reinterpret_cast<XElement*>(node);
     if (ndElm->name() == "field") {
-      // TODO Get value and other attributes!
+      // TODO(axfab) Get value and other attributes!
       NString str;
       if (reader_->readTheString(ndElm, str))
         return -1;
       entity->addValue(str);
-      
-    } else
+
+    } else {
       readCommonProperties(ndElm, entity);
+    }
   }
 }
 
@@ -233,8 +257,10 @@ NSchema* NSchemaReader::read()
   if (ndSchema->name() != "schema")
     return NULL;
 
-  schema_ = new NSchema(ndSchema->attributeString("name"), ndSchema->attributeString("namespace"));
-  // TODO -- the schema also have a library="yes/no/true/false" attribute!
+  schema_ = new NSchema(ndSchema->attributeString("name"),
+    ndSchema->attributeString("namespace"));
+  // TODO(axfab) -- the schema also have a library="yes/no/true/false"
+  // attribute!
   // A schema can be composed of common items, require and entity element!
   for (;;) {
     XNode *node = reader_->read();
@@ -242,16 +268,16 @@ NSchema* NSchemaReader::read()
       reader_->dispose();
       return schema_;
     }
-    
+
     if (node->nodeType() == XNODE_TEXT)
       return NULL;
     if (node->nodeType() != XNODE_ELEMENT)
       continue;
-    
+
     XElement* ndElm = reinterpret_cast<XElement*>(node);
     if (ndElm->name() == "require") {
-      return NULL; // NOT IMPLEMENTED
-      
+      return NULL;  // NOT IMPLEMENTED
+
     } else if (ndElm->name() == "entity") {
       if (readEntity(ndElm))
         return NULL;
@@ -260,17 +286,19 @@ NSchema* NSchemaReader::read()
       if (readEnum(ndElm))
         return NULL;
 
-    } else
+    } else {
       readCommonProperties(ndElm, schema_);
+    }
   }
 }
 
 
-NSchema *NSchemaReader::schema(cstr nms, cstr name) const 
-{ 
+NSchema *NSchemaReader::schema(cstr nms, cstr name) const
+{
   if (strcmp(schema_->nms(), nms) == 0 &&
-    strcmp(schema_->name(), name) == 0 )
-    return schema_; 
+      strcmp(schema_->name(), name) == 0 )
+    return schema_;
   return NULL;
 }
 
+}  // namespace xstm

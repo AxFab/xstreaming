@@ -20,28 +20,40 @@
   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
   DEALINGS IN THE SOFTWARE.
 */
-#include "xstm/xtext.hpp"
+#ifndef _NKIT_ENCODING_HPP
+#define _NKIT_ENCODING_HPP 1
+#include <iostream>
+#include "nkit/string.hpp"
 
-namespace xstm {
+namespace nkit {
 
-// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-//      XText
-// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+#ifndef __abstract
+/// Add a macro (often empty) to signal an abstract class
+# define __abstract
+#endif
 
 
-/// Initializes a new instance of XText class.
-XText::XText(cstr string)
-  : XNode(XNODE_TEXT)
+__abstract class NEncoding
 {
-  value_ = XObject::FormatText(string);
-}
+public:  // Static Accessors
+  static const NEncoding &UTF8();
+  static const NEncoding &Latin1();
+  static const NEncoding &UTF16_LE();
+  static const NEncoding &UTF16_BE();
+
+public:  // Public methods
+  virtual int readStream(std::istream* stream, char* buf, int cap) const = 0;
+  cstr name() const { return name_.c_str(); }
+
+protected:  // Protected methods
+  /// Protected constructor usable only for a new encoding subclass
+  NEncoding(cstr name);
+
+private:
+  NString name_;
+};
 
 
-/// Returns the indented XML for this object.
-cstr XText::toString() const
-{
-  return value();
-}
+}  // namespace nkit
 
-
-}  // namespace xstm
+#endif  /* _NKIT_ENCODING_HPP */

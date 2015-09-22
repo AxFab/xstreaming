@@ -20,28 +20,42 @@
   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
   DEALINGS IN THE SOFTWARE.
 */
-#include "xstm/xtext.hpp"
+#ifndef _XSTM_XDECLARATION_HPP
+#define _XSTM_XDECLARATION_HPP 1
+#include "xobject.hpp"
 
 namespace xstm {
 
-// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-//      XText
-// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-
-/// Initializes a new instance of XText class.
-XText::XText(cstr string)
-  : XNode(XNODE_TEXT)
+class XDeclaration : public XObject
 {
-  value_ = XObject::FormatText(string);
-}
+public:
+  /// Constructor
+  explicit XDeclaration(cstr version = NULL, cstr encoding = NULL,
+    cstr standalone = NULL);
+  /// Returns the indented XML for this object.
+  virtual cstr toString() const;
 
+public:
+  /// Gets the value of the document encoding
+  cstr encoding() const { return encoding_.c_str(); }
+  ///
+  cstr standalone() const { return standalone_.c_str(); }
+  /// Get the version of xml used on this document (usally 1.0)
+  cstr version() const { return version_.c_str(); }
+  /// Sets the value of the document encoding
+  void setEncoding(cstr encoding);
+  ///
+  void setStandalone(cstr standalone);
+  /// Set the version of xml used on this document (usally 1.0)
+  void setVersion(cstr version);
 
-/// Returns the indented XML for this object.
-cstr XText::toString() const
-{
-  return value();
-}
-
+private:
+  NString encoding_;
+  NString standalone_;
+  NString version_;
+};
 
 }  // namespace xstm
+
+#endif /* _XSTM_XDECLARATION_HPP */

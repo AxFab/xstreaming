@@ -1,0 +1,144 @@
+<?xml encoding="UTF-8" version="1.0" ?>
+<schema namespace="xtk" name="schema">
+  <labelSingular>Schéma</labelSingular>
+  <label>Schémas des entités</label>
+  <brief>Schémas des entités manipulées</brief>
+
+
+  <enum name="dataPolicy" type="string" sql-table="_NONE_">
+    <field>identifier</field>
+    <field>schema</field>
+    <field>schema-type</field>
+    <field>xpath-flat</field>
+  </enum>
+
+
+  <enum name="mappingType" type="string" sql-table="_NONE_">
+    <field>attribute</field>
+    <field>element</field>
+    <field>sequence</field>
+    <field>parent</field>
+    <field>text</field>
+  </enum>
+
+
+  <entity name="common">
+    <label>Schéma de données</label>
+    <sysFilter name="writeAccess" type="write">hasRole('admin')</sysFilter>
+
+    <property name="name" type="string" length="80" policy="identifier" mapping="attribute"/>
+    <property name="label" type="string" localizable="true" mapping="element"/>
+    <property name="labelSingular" type="string" localizable="true" mapping="element"/>
+    <property name="brief" type="string" localizable="true" mapping="element"/>
+    <property name="image" type="string" mapping="element"/>
+  </entity>
+
+
+  <entity name="schema" sql-table="xtkschema">
+    <extend>xtk:schema:common</extend>
+    <label>Schéma</label>
+    <image>xtk_schema.png</image>
+    <format>@namespace + ',' + @name</format>
+    <key name="nsName" uniq="yes" sql-primary="yes">
+      <keyField>@namespace</keyField>
+      <keyField>@name</keyField>
+    </key>
+    <sysFilter name="adminWriteAccess" type="write">hasRole('admin') and $(loginId) != 0 and isMemoNull(data) = 0</sysFilter>
+    <sysFilter name="adminReadAccess" type="read">hasRole('admin') and @namespace = 'xtk' and @name = 'merged'</sysFilter>
+
+    <property name="namespace" type="string" length="16" policy="identifier" mapping="attribute">
+      <label>Espace de nommage</label>
+    </property>
+    <property name="schema" type="string">
+      <expression>@namespace + ':' + @name</expression>
+    </property>
+    <property name="library" type="boolean" mapping="attribute"> <!-- !? -->
+      <label>Utilisation du schéma comme librairie et non comme entité</label>
+    </property>
+    <property name="entity" type="xtk:schema:entity" mapping="sequence" sql-join="@schema" />
+    <property name="enum" type="xtk:schema:enum" mapping="sequence" sql-join="@schema" />
+    <property name="require" type="string" mapping="sequence" policy="schema" />
+  </entity>
+
+
+  <entity name="entity" sql-table="xtkentity">
+    <extend>xtk:schema:common</extend>
+    <format>@name + ' (' + @schema + ')'</format>
+    <key name="ensName" uniq="yes" sql-primary="yes">
+      <keyField>@name</keyField>
+      <keyField>@schema</keyField>
+    </key>
+    <property name="schema" type="xtk:schema:schema" mapping="parent" sql-foreignkey="nsName" />
+    <property name="sql-table" type="string" mapping="attribute" policy="identifier" />
+    <property name="extend" type="string" mapping="sequence" sql-column="_NONE_" policy="schema-type"/>
+    <property name="format" type="string" mapping="element"/>
+    <property name="key" type="xtk:schema:key" mapping="sequence"/>
+    <property name="sysFilter" type="xtk:schema:sysFilter" mapping="sequence"/>
+    <property name="property" type="xtk:schema:property" mapping="sequence" sql-join="@entity"/>
+  </entity>
+
+  <entity name="property" sql-table="xtkproperty">
+    <extend>xtk:schema:common</extend>
+    <key name="prName" uniq="yes" sql-primary="yes">
+      <keyField>@name</keyField>
+      <keyField>@entity</keyField>
+    </key>
+    <property name="type" type="string" mapping="attribute" policy="schema-type">
+      <brief>The type of the field can be one of the primary type list or another entity</brief>
+    </property>
+    <property name="entity" type="xtk:schema:entity" mapping="parent" sql-foreignkey="ensName" />
+    <property name="length" type="integer" mapping="attribute"/>
+    <property name="default" type="string" mapping="attribute"/>
+    <property name="expression" type="string" mapping="element"/>
+    <!-- <property name="optional" type="boolean" mapping="attribute"/> -->
+    <property name="policy" type="xtk:schema:dataPolicy" mapping="attribute">
+      <brief>The policy is an identifier used to apply special checks on the field value.</brief>
+    </property>
+
+    <property name="localizable" type="boolean" mapping="attribute">
+      <brief>For string fields you can specify the string is localizable to handle a string in several language.</brief>
+    </property>
+    <property name="mapping" type="xtk:schema:mappingType" mapping="attribute">
+      <brief>Indicate which type of mapping is used: attribute, element, sequence, parent, text.</brief>
+    </property>
+    <property name="sql-column" type="string" mapping="attribute" policy="identifier">
+      <brief>Overwrite the default value for the sql column name.</brief>
+    </property>
+    <property name="sql-foreignkey" type="string" mapping="attribute" policy="identifier">
+      <brief>The name of the key in which to link the current property.</brief>
+    </property>
+    <property name="sql-join" type="string" mapping="attribute" policy="xpath-flat">
+      <brief>Which property to use in order of making the join. The porperty targeted should have a foreignkey clause.</brief>
+    </property>
+  </entity>
+
+  <entity name="key" sql-table="xtkkey">
+    <extend>xtk:schema:common</extend>
+    <property name="uniq" type="boolean" mapping="attribute" />
+    <property name="sql-primary" type="boolean" mapping="attribute" />
+    <property name="keyField" type="string" mapping="sequence" policy="xpath-flat" />
+  </entity>
+
+  <entity name="sysFilter" sql-table="xtksysfilter">
+    <property name="name" type="string" mapping="attribute" />
+    <property name="type" type="string" mapping="attribute" />
+    <property name="expression" type="string" mapping="text" />
+  </entity>
+
+  <entity name="enum" sql-table="xtkenum">
+    <extend>xtk:schema:common</extend>
+    <property name="field" type="enumfield" mapping="sequence" />
+  </entity>
+
+  <entity name="enumfield" sql-table="xtkenumfield">
+    <property name="name" type="string" mapping="text" />
+    <property name="value" type="string" mapping="attribute" />
+  </entity>
+
+  <!-- 
+    read-only
+    required / mandatory / optional
+   -->
+
+</schema>
+
